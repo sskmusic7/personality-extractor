@@ -1,0 +1,13 @@
+# Core dependencies for Character Personality Extraction
+sentence-transformers>=2.2.0
+numpy>=1.21.0
+pandas>=1.3.0
+scikit-learn>=1.0.0
+
+# Optional but recommended
+transformers>=4.20.0
+torch>=1.10.0
+
+# For visualization (optional)
+matplotlib>=3.5.0
+seaborn>=0.11.0

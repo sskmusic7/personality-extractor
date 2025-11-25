@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Character Personality Extraction System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        .input-section label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        .input-section input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .input-section input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .drop-zone {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 60px 20px;
+            text-align: center;
+            background: #f8f9ff;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+
+        .drop-zone:hover {
+            background: #f0f2ff;
+            border-color: #764ba2;
+        }
+
+        .drop-zone.dragover {
+            background: #e8ebff;
+            border-color: #764ba2;
+            transform: scale(1.02);
+        }
+
+        .drop-zone-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .drop-zone-text {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .drop-zone-hint {
+            font-size: 0.9em;
+            color: #999;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-list {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9ff;
+            border-radius: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .file-item {
+            padding: 10px;
+            background: white;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .file-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .file-name {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .file-size {
+            color: #999;
+            font-size: 0.9em;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+            margin-top: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .progress-container {
+            display: none;
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9ff;
+            border-radius: 10px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .status-message {
+            text-align: center;
+            color: #666;
+            font-size: 1em;
+        }
+
+        .results-section {
+            display: none;
+            margin-top: 30px;
+            padding: 30px;
+            background: #f8f9ff;
+            border-radius: 10px;
+        }
+
+        .results-header {
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .stat-label {
+            color: #999;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .download-btn {
+            background: #4caf50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .success-message {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎭 Character Personality Extractor</h1>
+            <p>Upload character scripts to extract personality patterns using GCP Vertex AI RAG</p>
+        </div>
+
+        <div class="content">
+            <div class="input-section">
+                <label for="character_name">Character Name</label>
+                <input type="text" id="character_name" placeholder="e.g., Tony Stark" value="Tony Stark">
+            </div>
+
+            <div class="drop-zone" id="dropZone">
+                <div class="drop-zone-icon">📁</div>
+                <div class="drop-zone-text">Drag and drop script files here</div>
+                <div class="drop-zone-hint">or click to browse (supports .txt, .json, .csv, .zip)</div>
+                <input type="file" id="fileInput" class="file-input" multiple accept=".txt,.json,.csv,.zip">
+            </div>
+
+            <div class="file-list" id="fileList" style="display: none;"></div>
+
+            <button class="btn btn-primary" id="uploadBtn" disabled>Upload & Extract Personality</button>
+            <button class="btn btn-secondary" id="clearBtn" style="display: none;">Clear Files</button>
+
+            <div class="error-message" id="errorMessage"></div>
+            <div class="success-message" id="successMessage"></div>
+
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill">0%</div>
+                </div>
+                <div class="status-message" id="statusMessage">Initializing...</div>
+            </div>
+
+            <div class="results-section" id="resultsSection">
+                <div class="results-header">Extraction Results</div>
+                <div id="resultsContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressFill = document.getElementById('progressFill');
+        const statusMessage = document.getElementById('statusMessage');
+        const resultsSection = document.getElementById('resultsSection');
+        const errorMessage = document.getElementById('errorMessage');
+        const successMessage = document.getElementById('successMessage');
+        const resultsContent = document.getElementById('resultsContent');
+
+        let selectedFiles = [];
+
+        // Drag and drop handlers
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+
+        function handleFiles(files) {
+            selectedFiles = Array.from(files);
+            displayFiles();
+            uploadBtn.disabled = selectedFiles.length === 0;
+            clearBtn.style.display = selectedFiles.length > 0 ? 'block' : 'none';
+        }
+
+        function displayFiles() {
+            if (selectedFiles.length === 0) {
+                fileList.style.display = 'none';
+                return;
+            }
+
+            fileList.style.display = 'block';
+            fileList.innerHTML = selectedFiles.map(file => `
+                <div class="file-item">
+                    <span class="file-name">${file.name}</span>
+                    <span class="file-size">${formatFileSize(file.size)}</span>
+                </div>
+            `).join('');
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        clearBtn.addEventListener('click', () => {
+            selectedFiles = [];
+            fileInput.value = '';
+            displayFiles();
+            uploadBtn.disabled = true;
+            clearBtn.style.display = 'none';
+        });
+
+        uploadBtn.addEventListener('click', async () => {
+            const characterName = document.getElementById('character_name').value.trim();
+            if (!characterName) {
+                showError('Please enter a character name');
+                return;
+            }
+
+            if (selectedFiles.length === 0) {
+                showError('Please select files to upload');
+                return;
+            }
+
+            await uploadAndExtract(characterName);
+        });
+
+        async function uploadAndExtract(characterName) {
+            hideMessages();
+            progressContainer.style.display = 'block';
+            resultsSection.style.display = 'none';
+            uploadBtn.disabled = true;
+
+            updateProgress(10, 'Uploading files...');
+
+            // Upload files
+            const formData = new FormData();
+            selectedFiles.forEach(file => formData.append('files', file));
+            formData.append('character_name', characterName);
+
+            try {
+                const uploadResponse = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!uploadResponse.ok) {
+                    const error = await uploadResponse.json();
+                    throw new Error(error.error || 'Upload failed');
+                }
+
+                const uploadData = await uploadResponse.json();
+                updateProgress(30, 'Files uploaded. Processing with GCP Vertex AI RAG...');
+
+                // Extract personality
+                const extractResponse = await fetch('/api/extract', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        temp_dir: uploadData.temp_dir,
+                        character_name: characterName
+                    })
+                });
+
+                if (!extractResponse.ok) {
+                    const error = await extractResponse.json();
+                    throw new Error(error.error || 'Extraction failed');
+                }
+
+                updateProgress(90, 'Finalizing results...');
+                const extractData = await extractResponse.json();
+
+                updateProgress(100, 'Complete!');
+                showResults(extractData);
+                showSuccess(`Successfully extracted personality from ${extractData.dialogue_count} dialogue entries!`);
+
+            } catch (error) {
+                showError(error.message);
+                progressContainer.style.display = 'none';
+            } finally {
+                uploadBtn.disabled = false;
+            }
+        }
+
+        function updateProgress(percent, message) {
+            progressFill.style.width = percent + '%';
+            progressFill.textContent = percent + '%';
+            statusMessage.textContent = message;
+        }
+
+        function showResults(data) {
+            resultsSection.style.display = 'block';
+            const patterns = data.patterns;
+            const speech = patterns.speech_patterns;
+
+            resultsContent.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-label">Dialogue Lines Analyzed</div>
+                    <div class="stat-value">${data.dialogue_count}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Average Sentence Length</div>
+                    <div class="stat-value">${speech.sentence_length.mean.toFixed(1)} words</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Formality Level</div>
+                    <div class="stat-value">${speech.formality_level}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Conflict Style</div>
+                    <div class="stat-value">${patterns.conflict_handling.dominant_style || 'N/A'}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">GCS Bucket</div>
+                    <div class="stat-value" style="font-size: 0.9em;">${data.gcs_bucket || 'N/A'}</div>
+                </div>
+                <div class="stat-card">
+                    <div style="margin-top: 15px;">
+                        ${data.download_paths && data.download_paths.rules ? 
+                            `<a href="/api/download/${data.download_paths.rules}" 
+                               class="download-btn">Download Python Rules (LLM)</a>` : ''}
+                        ${data.download_paths && data.download_paths.patterns ? 
+                            `<a href="/api/download/${data.download_paths.patterns}" 
+                               class="download-btn" style="margin-left: 10px;">Download JSON Patterns</a>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            setTimeout(() => {
+                errorMessage.style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            successMessage.textContent = message;
+            successMessage.style.display = 'block';
+            setTimeout(() => {
+                successMessage.style.display = 'none';
+            }, 5000);
+        }
+
+        function hideMessages() {
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+        }
+    </script>
+</body>
+</html>
+
+
+

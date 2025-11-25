@@ -1,0 +1,26 @@
+# Web Framework
+Flask>=2.3.0
+flask-cors>=4.0.0
+Werkzeug>=2.3.0
+click>=8.0.0  # Required for Flask 2.3+
+
+# Machine Learning & NLP
+sentence-transformers>=2.2.0
+numpy>=1.21.0
+pandas>=1.3.0
+scikit-learn>=1.0.0
+transformers>=4.20.0
+torch>=1.10.0
+
+# Google Cloud Platform - Latest versions (2025)
+google-cloud-storage>=3.0.0  # Required for latest aiplatform
+google-cloud-aiplatform>=1.70.0  # Supports Gemini 2.5
+google-generativeai>=0.8.0  # For Vertex AI Gemini 2.5 LLM
+
+# Utilities
+python-dotenv>=1.0.0
+
+# Visualization (optional, from reference requirements)
+matplotlib>=3.5.0
+seaborn>=0.11.0
+
