@@ -611,6 +611,53 @@ class CharacterPersonalityExtractorCloud:
         }
         
         return patterns
+    
+    def _analyze_phrase_contexts(self, top_phrases: List[tuple]) -> List[str]:
+        """Analyze when phrases are used (emotion/situation context) to prevent overuse."""
+        if not top_phrases or not self.dialogue_entries:
+            return []
+        
+        phrase_contexts = []
+        for phrase_tuple in top_phrases[:5]:  # Top 5 phrases
+            phrase = phrase_tuple[0] if isinstance(phrase_tuple, (list, tuple)) else phrase_tuple
+            
+            # Find entries containing this phrase
+            matching_entries = [
+                e for e in self.dialogue_entries 
+                if phrase.lower() in e.text.lower()
+            ]
+            
+            if not matching_entries:
+                continue
+            
+            # Analyze most common emotion/situation for this phrase
+            emotion_counts = {}
+            situation_counts = {}
+            for entry in matching_entries[:20]:  # Sample up to 20
+                emotion = entry.emotional_context
+                situation = entry.situation_type
+                emotion_counts[emotion] = emotion_counts.get(emotion, 0) + 1
+                situation_counts[situation] = situation_counts.get(situation, 0) + 1
+            
+            # Get most common context
+            top_emotion = max(emotion_counts.items(), key=lambda x: x[1])[0] if emotion_counts else None
+            top_situation = max(situation_counts.items(), key=lambda x: x[1])[0] if situation_counts else None
+            
+            # Create contextual description
+            context_parts = []
+            if top_emotion and top_emotion != 'neutral':
+                context_parts.append(f"when {top_emotion}")
+            if top_situation and top_situation != 'casual':
+                context_parts.append(f"in {top_situation} situations")
+            
+            if context_parts:
+                context_desc = f"says '{phrase}' " + " or ".join(context_parts)
+            else:
+                context_desc = f"uses '{phrase}' occasionally"
+            
+            phrase_contexts.append(context_desc)
+        
+        return phrase_contexts
         
     def generate_static_rules(self, patterns: Dict[str, Any], output_path: str = None) -> str:
         """Generate Python code for static personality rules based on extracted patterns."""
@@ -695,8 +742,19 @@ class {class_name}Personality:
         self.question_frequency = {speech['question_frequency']:.2f}
         self.exclamation_frequency = {speech['exclamation_frequency']:.2f}
         
+        # Common phrase patterns WITH CONTEXT (for "says stuff like..." style patterns)
+        # Analyze when phrases are used to prevent overuse
+        top_phrases = speech['common_phrases'][:10] if speech['common_phrases'] else []
+        phrase_contexts = self._analyze_phrase_contexts(top_phrases)
+        signature_phrases_list = speech['common_phrases'][:10] if speech['common_phrases'] else []
+        phrase_contexts_list = phrase_contexts  # Contextual usage patterns (list of strings)
+        
         # Common phrase patterns (for "says stuff like..." style patterns)
-        self.signature_phrases = {speech['common_phrases'][:10] if speech['common_phrases'] else []}
+        self.signature_phrases = {signature_phrases_list}
+        
+        # Phrase usage contexts (WHEN to use phrases - prevents overuse)
+        # Format: ["says 'oh my god' when surprised", "uses 'you know' when explaining", ...]
+        self.phrase_contexts = {json.dumps(phrase_contexts_list, indent=8) if phrase_contexts_list else "[]"}
         
         # Emotional response patterns (FILTERED: short examples only, for style reference)
         # Use these to understand HOW they express emotions, not WHAT they say verbatim
@@ -726,10 +784,14 @@ class {class_name}Personality:
             'add_exclamation': emotion == 'angry' and self.exclamation_frequency > 0.2,
         }}
         
-        # Add style patterns based on signature phrases
-        if self.signature_phrases:
+        # Add style patterns based on signature phrases WITH CONTEXT
+        if hasattr(self, 'phrase_contexts') and self.phrase_contexts:
+            # Use contextual patterns (e.g., "says 'oh my god' when surprised")
+            style['speaking_patterns'] = self.phrase_contexts[:3] if isinstance(self.phrase_contexts, list) else []
+        elif self.signature_phrases:
+            # Fallback: use phrases with generic context hint
             top_phrases = [p[0] if isinstance(p, (list, tuple)) else p for p in self.signature_phrases[:3]]
-            style['speaking_patterns'] = [f"tends to use phrases like '{{p}}'".format(p=p) for p in top_phrases]
+            style['speaking_patterns'] = [f"occasionally uses phrases like '{{p}}' when appropriate".format(p=p) for p in top_phrases]
         
         if situation == 'conflict':
             style['conflict_approach'] = self.conflict_style

@@ -306,15 +306,16 @@ The chatbot should generate NEW responses based on the user's question, but in {
 CRITICAL REQUIREMENTS:
 1. Focus on HOW they speak: energy level, speaking patterns, style descriptors (e.g., "she says stuff like...", "tends to use...", "has a way of...")
 2. Extract PERSONALITY ESSENCE: overall energy, vibe, communication style (enthusiastic? direct? reflective?)
-3. Create STYLE PATTERNS: not verbatim quotes, but patterns like "she often starts with...", "tends to use phrases like...", "has a habit of..."
-4. Methods should return guidelines for HOW to respond, not WHAT to say
-5. The actual response content should be generated based on the user's question, but in this character's style
+3. Create STYLE PATTERNS WITH CONTEXT: For every phrase pattern, include WHEN/WHY it's used. Example: "says 'oh my god' when surprised or excited" NOT just "says 'oh my god'". This prevents overuse.
+4. All phrase patterns must include contextual triggers: "uses [phrase] when [situation/emotion/context]" or "tends to say [phrase] in [specific scenario]"
+5. Methods should return guidelines for HOW to respond, not WHAT to say
+6. The actual response content should be generated based on the user's question, but in this character's style
 
 Create a class called {character_name.replace(' ', '').replace('-', '')}Personality with:
 - Attributes:
   * personality_essence: str - overall energy/vibe description (e.g., "enthusiastic, direct, conversational")
   * speaking_style: dict - HOW they speak (patterns, energy, rhythm)
-  * common_phrase_patterns: list - patterns like "says stuff like..." (not verbatim, but style patterns)
+  * common_phrase_patterns: list - patterns with CONTEXT like "says 'oh my god' when surprised" or "uses 'you know' when explaining" (MUST include WHEN/WHY, not just the phrase)
   * energy_level: str - overall energy (high/medium/low, enthusiastic/calm/etc)
   
 - Methods:
